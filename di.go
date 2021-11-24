@@ -24,6 +24,13 @@ var container = &Container{
 	services: make(map[string]interface{}),
 }
 
+func MustInject(data interface{}) {
+    err := Inject(data)
+    if err != nil {
+        log.Panic(err)
+    }
+}
+
 func Inject(data interface{}) error {
 	rtype := reflect.TypeOf(data)
 

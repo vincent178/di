@@ -24,8 +24,30 @@ var container = &Container{
 	services: make(map[string]interface{}),
 }
 
-func InjectWithName(name string, data interface{}) {
+func Inject(data interface{}) error {
+	rtype := reflect.TypeOf(data)
+
+	if rtype.Kind() != reflect.Ptr {
+		return errors.New("not a pointer")
+	}
+
+	name := rtype.Elem().Name()
+
+	InjectWithName(name, data)
+
+	return nil
+}
+
+func InjectWithName(name string, data interface{}) error {
+	rtype := reflect.TypeOf(data)
+
+	if rtype.Kind() != reflect.Ptr {
+		return errors.New("not a pointer")
+	}
+
 	initByName(name, data)
+
+	return nil
 }
 
 func LoadByName(name string, data interface{}) error {

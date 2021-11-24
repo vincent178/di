@@ -38,6 +38,17 @@ func (s *TestService) Close() error {
 	return nil
 }
 
+func TestLoadByName(t *testing.T) {
+	t.Run("load service by name", func(t *testing.T) {
+		var ts TestService
+		InjectWithName("abc", &ts)
+
+		err := LoadByName("abc", &ts)
+		assert.NoError(t, err)
+		assert.True(t, ts.init)
+	})
+}
+
 func TestLoad(t *testing.T) {
 	// run with --race flag
 	t.Run("detect race condition", func(t *testing.T) {

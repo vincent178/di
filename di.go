@@ -24,15 +24,15 @@ var container = &Container{
 	services: make(map[string]interface{}),
 }
 
-func Load(data interface{}) error {
-	rtype := reflect.TypeOf(data)
-	rv := reflect.ValueOf(data)
+func InjectWithName(name string, data interface{}) {
+	initByName(name, data)
+}
 
+func LoadByName(name string, data interface{}) error {
+	rv := reflect.ValueOf(data)
 	if rv.Kind() != reflect.Ptr || rv.IsNil() {
 		return errors.New("not a pointer")
 	}
-
-	name := rtype.Elem().Name()
 
 	container.m.RLock()
 	service := container.services[name]
@@ -41,20 +41,21 @@ func Load(data interface{}) error {
 	if service != nil {
 		rv.Elem().Set(reflect.ValueOf(service).Elem())
 	} else {
-		var once sync.Once
-		once.Do(func() {
-			if initializer, ok := data.(Initializer); ok {
-				if err := initializer.Init(); err != nil {
-					log.Panic("init error", err)
-				}
-			}
-			container.m.Lock()
-			container.services[name] = data
-			container.m.Unlock()
-		})
+		initByName(name, data)
 	}
 
 	return nil
+}
+
+func Load(data interface{}) error {
+	rtype := reflect.TypeOf(data)
+	if rtype.Kind() != reflect.Ptr {
+		return errors.New("not a pointer")
+	}
+
+	name := rtype.Elem().Name()
+
+	return LoadByName(name, data)
 }
 
 func Close() error {
@@ -66,4 +67,18 @@ func Close() error {
 		}
 	}
 	return nil
+}
+
+func initByName(name string, data interface{}) {
+	var once sync.Once
+	once.Do(func() {
+		if initializer, ok := data.(Initializer); ok {
+			if err := initializer.Init(); err != nil {
+				log.Panic("init error", err)
+			}
+		}
+		container.m.Lock()
+		container.services[name] = data
+		container.m.Unlock()
+	})
 }

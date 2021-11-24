@@ -25,10 +25,10 @@ var container = &Container{
 }
 
 func MustInject(data interface{}) {
-    err := Inject(data)
-    if err != nil {
-        log.Panic(err)
-    }
+	err := Inject(data)
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func Inject(data interface{}) error {
@@ -43,6 +43,13 @@ func Inject(data interface{}) error {
 	InjectWithName(name, data)
 
 	return nil
+}
+
+func MustInjectWithName(name string, data interface{}) {
+	err := InjectWithName(name, data)
+	if err != nil {
+		log.Panic(err)
+	}
 }
 
 func InjectWithName(name string, data interface{}) error {
